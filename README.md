@@ -1,5 +1,7 @@
 # Blissful Budget Expense Log — Web
 
+**Live:** https://addisonbliss.github.io/BlissfulBudgetHTML/
+
 A browser-based sibling to the native Android app in `../BlissfulBudgetApp` —
 same Figma design, same Microsoft Graph/OneDrive integration, same feature
 set — built so it also runs on iOS (and any other device with a browser)
@@ -44,9 +46,9 @@ tracks their redirect URIs separately even under one app registration):
 2. **App registrations** → find the app with client ID
    `2f5c273f-a3f5-4570-a271-dcd9dac47afe` → **Authentication**.
 3. **Add a platform** → **Single-page application**.
-4. Add a redirect URI for wherever this site ends up hosted, e.g.
-   `https://<your-github-username>.github.io/<repo-name>/` (GitHub Pages) —
-   add `http://localhost:<port>/` too if you ever want to test from a local
+4. Add this exact redirect URI (this is now live on GitHub Pages):
+   `https://addisonbliss.github.io/BlissfulBudgetHTML/`
+   Add `http://localhost:<port>/` too if you ever want to test from a local
    server. Save.
 
 `js/auth.js` already points at this same client ID and the `consumers`
@@ -55,17 +57,17 @@ authority (personal accounts only, matching the native app's
 redirect URI is registered, as long as `redirectUri` in `js/auth.js` matches
 where you actually host it.
 
-### 2. Deploy somewhere with HTTPS
+### 2. Deploy somewhere with HTTPS — done
 
-OAuth redirects (and most of what a real device needs to treat this as an
-installable app) require serving over `https://`, not opening the HTML file
-directly (`file://`) and not a bare `http://`. The natural fit given the
-existing GitHub-based workflow: push this folder to a GitHub repo and enable
-**GitHub Pages** (Settings → Pages → serve from the branch/folder) — no
-build step, no Actions workflow needed, since these are already the final
-static files. That gives a permanent `https://…github.io/…` URL you can open
-on the iPhone (or any device) and optionally "Add to Home Screen" for an
-app-like icon and full-screen window.
+This is already live on GitHub Pages, served directly from this repo's
+`master` branch with no build step or Actions workflow (these are already
+the final static files):
+
+**https://addisonbliss.github.io/BlissfulBudgetHTML/**
+
+Open that on the iPhone (or any device) and optionally "Add to Home Screen"
+for an app-like icon and full-screen window. Any push to `master` redeploys
+automatically within a minute or two.
 
 ## What's implemented so far
 
