@@ -567,6 +567,23 @@ BB.screens.expenseInformation = (() => {
     if (detailsInput) {
       detailsInput.addEventListener("input", (e) => {
         details = e.target.value;
+        // Re-render immediately so the checkmark and LOG's enabled state
+        // reflect this keystroke right away, instead of only catching up
+        // the next time something unrelated (opening a dropdown, say)
+        // happens to trigger a render. Unlike the Amount field -- which
+        // always appends at the end, so it's safe to just refocus and
+        // jump the cursor there -- this is free-form text someone may be
+        // editing mid-string, so the exact selection is captured before
+        // the re-render (which destroys and recreates this <input>) and
+        // restored after, rather than always moving it to the end.
+        const selectionStart = e.target.selectionStart;
+        const selectionEnd = e.target.selectionEnd;
+        render();
+        const el = document.getElementById("ei-details-input");
+        if (el) {
+          el.focus();
+          el.setSelectionRange(selectionStart, selectionEnd);
+        }
       });
       detailsInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
