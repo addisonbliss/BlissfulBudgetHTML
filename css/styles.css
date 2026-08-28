@@ -281,6 +281,34 @@ svg {
   color: var(--placeholder-blue);
 }
 
+/* Choose Spreadsheet (Frame 1/2) content layout ------------------------
+   A flex column, not an absolutely-positioned "bottom: 295px" group --
+   that approach measured up from the bottom of #screen-container, whose
+   real height depends on the actual browser viewport (address bar, safe
+   areas, etc. eat space the native app's fixed-size screen never had to
+   account for), so on a short-enough viewport the reserved 295px pushed
+   the field/button group up into the welcome text above it. The spacer
+   below absorbs whatever room is left between the two, and simply shrinks
+   -- instead of overlapping -- if the screen is too short to fit both with
+   room to spare. */
+.cs-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.cs-welcome {
+  flex: 0 0 auto;
+}
+.cs-spacer {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.cs-bottom-group {
+  flex: 0 0 auto;
+  padding: 0 34px 295px;
+}
+
 /* SpreadsheetFileField (Frame 1/2) */
 .file-field-row {
   display: flex;

@@ -32,34 +32,37 @@ BB.screens.chooseSpreadsheet = (() => {
   function renderScreen() {
     const isFilled = !!selectedFile;
     container.innerHTML = `
-      <div class="cs-welcome">
-        <div style="font-family:var(--font-family); font-weight:700; font-style:italic; font-size:var(--header-title-size); color:var(--app-black); text-align:center;">WELCOME!</div>
-        <div style="height:12px;"></div>
-        <div style="font-family:var(--font-family); font-weight:700; font-style:italic; font-size:var(--section-title-size); color:var(--app-black); text-align:center;">TO GET STARTED<br/>CLICK THE FOLDER BELOW</div>
-      </div>
-      <div class="cs-bottom-group" style="position:absolute; left:0; right:0; bottom:295px; padding:0 34px;">
-        <label class="bb-field-label">CHOOSE SPREADSHEET FILE:</label>
-        <div class="file-field-row">
-          <div class="file-field-box">
-            <div class="bb-field-box" id="cs-file-field-box" role="button" tabindex="0" aria-label="Choose spreadsheet file">
-              ${
-                isFilled
-                  ? `<span class="bb-field-value" style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(selectedFile.name)}</span>`
-                  : `<span class="bb-field-placeholder" style="flex:1;">OneDrive File</span>`
-              }
-              <div style="width:20px; height:20px; flex:0 0 auto;">${BB.icons.folder()}</div>
-            </div>
-          </div>
-          <div class="file-field-checkmark">${isFilled ? BB.icons.checkCircle() : ""}</div>
+      <div class="cs-content">
+        <div class="cs-welcome">
+          <div style="font-family:var(--font-family); font-weight:700; font-style:italic; font-size:var(--header-title-size); color:var(--app-black); text-align:center;">WELCOME!</div>
+          <div style="height:12px;"></div>
+          <div style="font-family:var(--font-family); font-weight:700; font-style:italic; font-size:var(--section-title-size); color:var(--app-black); text-align:center;">TO GET STARTED<br/>CLICK THE FOLDER BELOW</div>
         </div>
-        <div style="height:43px;"></div>
-        <div style="display:flex; justify-content:flex-end; gap:20px; padding-right:33px;">
-          ${
-            isFilled
-              ? `<button class="bb-button bb-button--secondary" id="cs-clear-button" type="button">CLEAR</button>
-                 <button class="bb-button bb-button--next" id="cs-next-button" type="button">NEXT</button>`
-              : `<button class="bb-button bb-button--disabled" type="button" disabled>NEXT</button>`
-          }
+        <div class="cs-spacer"></div>
+        <div class="cs-bottom-group">
+          <label class="bb-field-label">CHOOSE SPREADSHEET FILE:</label>
+          <div class="file-field-row">
+            <div class="file-field-box">
+              <div class="bb-field-box" id="cs-file-field-box" role="button" tabindex="0" aria-label="Choose spreadsheet file">
+                ${
+                  isFilled
+                    ? `<span class="bb-field-value" style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(selectedFile.name)}</span>`
+                    : `<span class="bb-field-placeholder" style="flex:1;">OneDrive File</span>`
+                }
+                <div style="width:20px; height:20px; flex:0 0 auto;">${BB.icons.folder()}</div>
+              </div>
+            </div>
+            <div class="file-field-checkmark">${isFilled ? BB.icons.checkCircle() : ""}</div>
+          </div>
+          <div style="height:43px;"></div>
+          <div style="display:flex; justify-content:flex-end; gap:20px; padding-right:33px;">
+            ${
+              isFilled
+                ? `<button class="bb-button bb-button--secondary" id="cs-clear-button" type="button">CLEAR</button>
+                   <button class="bb-button bb-button--next" id="cs-next-button" type="button">NEXT</button>`
+                : `<button class="bb-button bb-button--disabled" type="button" disabled>NEXT</button>`
+            }
+          </div>
         </div>
       </div>
     `;
