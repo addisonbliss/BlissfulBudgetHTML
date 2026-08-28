@@ -20,6 +20,9 @@ BB.screens.selectMonth = (() => {
   let dropdownExpanded = false;
   let selectedMonth = null;
   let sheetsState = { kind: "loading" }; // loading | loaded({names}) | error({message})
+  // See expenseInformation.js's own scrollLocked for why this is tracked
+  // centrally in render() rather than at each open/close/select call site.
+  let scrollLocked = false;
 
   function escapeHtml(text) {
     const div = document.createElement("div");
@@ -77,6 +80,13 @@ BB.screens.selectMonth = (() => {
     }
 
     const disabledLook = dropdownExpanded;
+    if (dropdownExpanded && !scrollLocked) {
+      BB.ui.scrollLock.lock();
+      scrollLocked = true;
+    } else if (!dropdownExpanded && scrollLocked) {
+      BB.ui.scrollLock.unlock();
+      scrollLocked = false;
+    }
 
     container.innerHTML = `
       <div class="frame-content">
@@ -157,6 +167,13 @@ BB.screens.selectMonth = (() => {
 
   /** Mounts this screen. `p`: { spreadsheetFileName, spreadsheetFileId, selectedMonth, onSelectMonth, onBack, onNext, cachedMonths, onMonthsLoaded }. */
   function mount(containerEl, p) {
+    // Defensive: the dropdown should never still be open when this screen
+    // goes away (BACK/NEXT are disabled while it is), but a leaked lock
+    // would silently break scrolling on every screen after this one.
+    if (scrollLocked) {
+      BB.ui.scrollLock.unlock();
+      scrollLocked = false;
+    }
     container = containerEl;
     props = p || {};
     dropdownExpanded = false;

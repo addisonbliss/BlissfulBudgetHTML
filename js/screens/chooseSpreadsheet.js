@@ -105,12 +105,14 @@ BB.screens.chooseSpreadsheet = (() => {
     searchQuery = "";
     folderStack = rememberedStack || [{ id: null, name: "OneDrive" }];
     backdrop().classList.add("is-open");
+    BB.ui.scrollLock.lock();
     await loadFolder(folderStack[folderStack.length - 1].id);
   }
 
   function closeDialog() {
     backdrop().classList.remove("is-open");
     pickerState = { kind: "hidden" };
+    BB.ui.scrollLock.unlock();
   }
 
   async function loadFolder(folderId) {
@@ -282,7 +284,7 @@ BB.screens.chooseSpreadsheet = (() => {
       <div class="bb-divider"></div>
       <div class="bb-dialog-gap-8"></div>
       <div class="search-bar">
-        <input class="search-bar__input" id="cs-search-input" type="text" placeholder="Search this folder" value="${escapeHtml(searchQuery)}" />
+        <input class="search-bar__input" id="cs-search-input" type="text" enterkeyhint="search" placeholder="Search this folder" value="${escapeHtml(searchQuery)}" />
         <button class="search-bar__submit" id="cs-search-submit" type="button">${BB.icons.arrowRight()}</button>
       </div>
       <div class="bb-dialog-gap-8"></div>

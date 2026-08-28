@@ -773,6 +773,18 @@ svg {
 .amount-field-overlay.is-error {
   color: var(--calculator-cancel-red);
 }
+/* The undimmed "amount value stays visible on the scrim" clone (Result/
+   Error calculator phases) -- anchored via CSS to the Amount field's own
+   wrapper (top:22px = the "AMOUNT" label's own height + 4px gap, the same
+   split every field on this screen uses) rather than a JS-measured
+   offset, for the same staleness reasons as .calculator-popup above. */
+.ei-scrim-amount-box {
+  position: absolute;
+  top: 22px;
+  left: 0;
+  width: 196px;
+  z-index: 41;
+}
 .amount-calculator-icon {
   width: 24px;
   height: 24px;
@@ -781,11 +793,21 @@ svg {
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
 }
 
-/* Calculator drop-up (Frame 6's Amount field) */
+/* Calculator drop-up (Frame 6's Amount field) -- anchored purely in CSS
+   (bottom:100% of the Amount field's own wrapper, which the fields column
+   stretches to the full field width via flex's default align-items:
+   stretch) rather than a JS-computed pixel offset. A JS-measured position
+   only reflects the layout at the instant it was calculated -- opening
+   the on-screen keyboard for the formula field reflows/rescrolls the
+   page, which silently went stale and made the popup (and its buttons)
+   land somewhere else entirely. Pure CSS positioning is recalculated by
+   the browser on every layout change, so it can't go stale. */
 .calculator-popup {
   position: absolute;
   z-index: 70;
-  width: 100%;
+  left: 0;
+  right: 0;
+  bottom: 100%;
   height: 115px;
   background: var(--app-white);
   border: 1px solid var(--app-black);
@@ -845,26 +867,25 @@ svg {
   flex: 1;
   display: flex;
   align-items: center;
+  gap: 8px;
   margin-top: 36px;
 }
-.calculator-popup__second-row.is-editing {
-  gap: 16px;
-}
-.calculator-popup__second-row.is-result {
-  justify-content: space-between;
-}
 .calculator-popup__caption {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0;
   font-family: var(--font-family);
   font-style: italic;
   font-size: var(--field-placeholder-size);
   color: var(--chrome-dark-gray);
 }
+/* flex-basis 86px (matching the design at a normal width) but allowed to
+   both grow (filling extra room on a wide screen) and shrink (never
+   overflowing/wrapping on a narrow one, e.g. an iPhone SE at ~375px or
+   smaller, where 3 fixed 86px buttons plus gaps genuinely don't fit). */
 .calculator-action-button {
-  width: 86px;
+  flex: 1 1 86px;
+  min-width: 0;
   height: 30px;
-  flex: 0 0 auto;
   background: var(--button-secondary-bg);
   border: 1px solid var(--app-black);
   border-radius: 4px;
@@ -875,6 +896,11 @@ svg {
   font-size: var(--menu-label-size);
   text-align: center;
   cursor: pointer;
+}
+/* CANCEL alone (Editing phase) shouldn't grow to split space with the
+   caption next to it -- only the caption should absorb the extra room. */
+.calculator-popup__second-row.is-editing .calculator-action-button {
+  flex-grow: 0;
 }
 .calculator-action-button.is-disabled {
   background: var(--calculator-disabled-bg);

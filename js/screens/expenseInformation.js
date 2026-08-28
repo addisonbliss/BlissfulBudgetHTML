@@ -29,7 +29,6 @@ BB.screens.expenseInformation = (() => {
   const CATEGORY_PLACEHOLDER = "<Select Category>";
   const SUBCATEGORY_PLACEHOLDER = "<Select Sub-Category>";
   const CATEGORY_COLUMNS = ["CA", "CB", "CC", "CD", "CE", "CF", "CG", "CH", "CI", "CJ", "CK", "CL"];
-  const CALCULATOR_BOX_HEIGHT = 115;
   const MAX_AMOUNT_DIGITS = 9;
 
   let container = null;
@@ -55,6 +54,25 @@ BB.screens.expenseInformation = (() => {
   let calculatorFormula = "";
   let calculatorPhase = "editing"; // editing | result | error
   let amountBeforeCalculator = "";
+
+  // Tracked here (rather than at each individual open/close/select/
+  // outside-click call site, several of which can close an overlay
+  // without going through a shared "close" function) so locking the
+  // background scroll can never drift out of sync with whether an
+  // overlay is actually showing -- every state change already re-renders,
+  // so comparing "was any overlay open, is one open now" right here
+  // catches every path exactly once.
+  let scrollLocked = false;
+
+  // Set true only at the specific moments the formula field should
+  // (re)gain focus -- opening the calculator, or CLEAR resetting it for
+  // another attempt. Left false after evaluating (whether via "=" or
+  // Enter): both are meant to commit the formula and dismiss the
+  // keyboard, and every state change re-renders the whole popup (a fresh
+  // <input>, with no memory of having just been blurred), so unconditionally
+  // refocusing on every render would pop the keyboard right back open the
+  // instant it was dismissed.
+  let focusFormulaOnNextRender = false;
 
   function escapeHtml(text) {
     const div = document.createElement("div");
@@ -140,6 +158,7 @@ BB.screens.expenseInformation = (() => {
     calculatorFormula = "";
     calculatorPhase = "editing";
     calculatorOpen = true;
+    focusFormulaOnNextRender = true;
     render();
   }
 
@@ -171,6 +190,7 @@ BB.screens.expenseInformation = (() => {
     calculatorFormula = "";
     amount = "";
     calculatorPhase = "editing";
+    focusFormulaOnNextRender = true;
     render();
   }
 
@@ -265,8 +285,14 @@ BB.screens.expenseInformation = (() => {
     else whoDunnitHtml = labeledDropdownHtml("ei-whodunnit", "WHO DUNNIT?", "<Select Spender>", whoDunnitState.options, whoDunnit, whoDunnitExpanded, true);
 
     const overlayText = calculatorOpen ? (calculatorPhase === "error" ? "ERROR" : calculatorPhase === "editing" ? "Calculating..." : null) : null;
+    // The calculator popup and the "undimmed amount box" clone are both
+    // rendered INSIDE this wrap (position:relative), anchored purely via
+    // CSS (see .calculator-popup/.ei-scrim-amount-box) rather than a
+    // JS-measured pixel offset -- a measured position only reflects the
+    // instant it was calculated, and opening the on-screen keyboard for
+    // the formula field reflows/rescrolls the page, silently going stale.
     const amountHtml = `
-      <div id="ei-amount-wrap">
+      <div id="ei-amount-wrap" style="position:relative;">
         <label class="bb-field-label">AMOUNT</label>
         <div style="height:4px;"></div>
         <div style="display:flex; align-items:center;">
@@ -274,7 +300,7 @@ BB.screens.expenseInformation = (() => {
             ${
               overlayText
                 ? `<span class="amount-field-overlay ${calculatorPhase === "error" ? "is-error" : ""}">${escapeHtml(overlayText)}</span>`
-                : `${amount ? '<span class="amount-field-prefix">$</span>' : ""}<input class="amount-field-input" id="ei-amount-input" type="text" inputmode="numeric" placeholder="Enter Amount" value="${escapeHtml(formatAmountDisplay(amount))}" ${calculatorOpen ? "disabled" : ""}/>`
+                : `${amount ? '<span class="amount-field-prefix">$</span>' : ""}<input class="amount-field-input" id="ei-amount-input" type="text" inputmode="numeric" enterkeyhint="done" placeholder="Enter Amount" value="${escapeHtml(formatAmountDisplay(amount))}" ${calculatorOpen ? "disabled" : ""}/>`
             }
           </div>
           <div style="width:6px;"></div>
@@ -282,6 +308,16 @@ BB.screens.expenseInformation = (() => {
           <div style="width:6px;"></div>
           <div class="file-field-checkmark">${amount ? BB.icons.checkCircle() : ""}</div>
         </div>
+        ${
+          calculatorPhase !== "editing" && calculatorOpen
+            ? `<div class="bb-field-box amount-field-row ei-scrim-amount-box" id="ei-scrim-amount-box">${
+                calculatorPhase === "error"
+                  ? `<span class="amount-field-overlay is-error">ERROR</span>`
+                  : `${amount ? '<span class="amount-field-prefix">$</span>' : ""}<span class="amount-field-input" style="text-align:right; flex:1;">${escapeHtml(formatAmountDisplay(amount))}</span>`
+              }</div>`
+            : ""
+        }
+        ${calculatorOpen ? renderCalculatorPopup() : ""}
       </div>
     `;
 
@@ -309,6 +345,13 @@ BB.screens.expenseInformation = (() => {
         : "";
 
     const anyOverlay = categoryExpanded || subCategoryExpanded || whoDunnitExpanded || calculatorOpen;
+    if (anyOverlay && !scrollLocked) {
+      BB.ui.scrollLock.lock();
+      scrollLocked = true;
+    } else if (!anyOverlay && scrollLocked) {
+      BB.ui.scrollLock.unlock();
+      scrollLocked = false;
+    }
 
     container.innerHTML = `
       <div class="frame-content">
@@ -350,16 +393,6 @@ BB.screens.expenseInformation = (() => {
           ${subCategoryExpanded ? `<span class="ei-scrim-label" id="ei-scrim-subcategory-label">SUB-CATEGORY</span>` : ""}
           ${whoDunnitExpanded ? `<span class="ei-scrim-label" id="ei-scrim-whodunnit-label">WHO DUNNIT?</span>` : ""}
           ${anyOverlay ? `<span class="ei-scrim-title" id="ei-scrim-title">EXPENSE INFORMATION</span>` : ""}
-          ${
-            calculatorPhase !== "editing" && calculatorOpen
-              ? `<div class="bb-field-box amount-field-row" id="ei-scrim-amount-box" style="position:absolute; left:34px; width:196px; z-index:41;">${
-                  calculatorPhase === "error"
-                    ? `<span class="amount-field-overlay is-error">ERROR</span>`
-                    : `${amount ? '<span class="amount-field-prefix">$</span>' : ""}<span class="amount-field-input" style="text-align:right; flex:1;">${escapeHtml(formatAmountDisplay(amount))}</span>`
-                }</div>`
-              : ""
-          }
-          ${calculatorOpen ? renderCalculatorPopup() : ""}
         </div>
       </div>
     `;
@@ -381,10 +414,10 @@ BB.screens.expenseInformation = (() => {
            <button class="calculator-action-button ${calculatorPhase === "error" ? "is-disabled" : ""}" id="calc-accept" type="button" style="color:${calculatorPhase === "result" ? "var(--calculator-accept-green)" : "var(--chrome-dark-gray)"};" ${calculatorPhase === "error" ? "disabled" : ""}>ACCEPT</button>
          </div>`;
     return `
-      <div class="calculator-popup" id="ei-calculator-popup" style="left:34px; right:34px; width:auto;">
+      <div class="calculator-popup" id="ei-calculator-popup">
         <div class="calculator-popup__formula-row">
           <div class="calculator-popup__formula-box">
-            <input class="calculator-popup__formula-input" id="calc-formula-input" type="text" placeholder="Ex: (5*2+4)/3" value="${escapeHtml(calculatorFormula)}"/>
+            <input class="calculator-popup__formula-input" id="calc-formula-input" type="text" inputmode="text" enterkeyhint="done" placeholder="Ex: (5*2+4)/3" value="${escapeHtml(calculatorFormula)}"/>
           </div>
           <button class="calculator-popup__equals" id="calc-equals" type="button">=</button>
         </div>
@@ -393,6 +426,12 @@ BB.screens.expenseInformation = (() => {
     `;
   }
 
+  // Only the title/label undim clones still need a measured position --
+  // they have to track wherever their real counterpart happens to render
+  // (which varies with which fields are loading/error/loaded), and none
+  // of them involve an on-screen keyboard, so they aren't at risk of the
+  // keyboard-resize staleness the calculator itself used to have (now
+  // fixed by anchoring it in pure CSS -- see .calculator-popup).
   function positionOverlay() {
     const root = document.getElementById("ei-scrim-root");
     if (!root) return;
@@ -410,16 +449,6 @@ BB.screens.expenseInformation = (() => {
 
     const whoDunnitLabelEl = document.getElementById("ei-scrim-whodunnit-label");
     if (whoDunnitLabelEl) whoDunnitLabelEl.style.top = `${offsetOf(document.getElementById("ei-whodunnit-wrap"))}px`;
-
-    const amountBox = document.getElementById("ei-amount-box");
-    const scrimAmountBox = document.getElementById("ei-scrim-amount-box");
-    if (scrimAmountBox && amountBox) scrimAmountBox.style.top = `${offsetOf(amountBox)}px`;
-
-    const calcPopup = document.getElementById("ei-calculator-popup");
-    if (calcPopup && amountBox) {
-      const top = Math.max(0, offsetOf(amountBox) - CALCULATOR_BOX_HEIGHT);
-      calcPopup.style.top = `${top}px`;
-    }
   }
 
   function handleOutsideClick(e) {
@@ -522,6 +551,14 @@ BB.screens.expenseInformation = (() => {
           el.setSelectionRange(el.value.length, el.value.length);
         }
       });
+      // Enter/Return commits the value by dismissing the keyboard, the
+      // same visible "this is entered now" cue a real form submit gives.
+      amountInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          amountInput.blur();
+        }
+      });
     }
     const calculatorIcon = document.getElementById("ei-calculator-icon");
     if (calculatorIcon) calculatorIcon.addEventListener("click", openCalculator);
@@ -530,6 +567,12 @@ BB.screens.expenseInformation = (() => {
     if (detailsInput) {
       detailsInput.addEventListener("input", (e) => {
         details = e.target.value;
+      });
+      detailsInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          detailsInput.blur();
+        }
       });
     }
 
@@ -542,11 +585,28 @@ BB.screens.expenseInformation = (() => {
         formulaInput.addEventListener("focus", () => {
           if (calculatorPhase !== "editing") {
             calculatorPhase = "editing";
+            // The tap that just focused this field is real user intent to
+            // keep typing -- re-render swaps in a fresh <input> that loses
+            // that focus, so it needs to be explicitly restored once.
+            focusFormulaOnNextRender = true;
             render();
           }
         });
-        formulaInput.focus();
-        formulaInput.setSelectionRange(formulaInput.value.length, formulaInput.value.length);
+        // Enter/Return commits the formula, same as tapping "=" -- also
+        // dismisses the keyboard first, so the result is visibly "entered"
+        // rather than left hanging behind the still-open keyboard.
+        formulaInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            formulaInput.blur();
+            evaluateCalculatorFormula();
+          }
+        });
+        if (focusFormulaOnNextRender) {
+          focusFormulaOnNextRender = false;
+          formulaInput.focus();
+          formulaInput.setSelectionRange(formulaInput.value.length, formulaInput.value.length);
+        }
       }
       const equalsButton = document.getElementById("calc-equals");
       if (equalsButton) equalsButton.addEventListener("click", evaluateCalculatorFormula);
@@ -570,6 +630,14 @@ BB.screens.expenseInformation = (() => {
 
   /** Mounts this screen. `p`: { spreadsheetFileName, spreadsheetFileId, month, onBack, onExpenseLogged, onLoggingChanged }. */
   function mount(containerEl, p) {
+    // Defensive: an overlay should never still be open when this screen
+    // goes away (the scrim blocks BACK/every other control while one is
+    // showing), but a leaked lock would silently break scrolling on every
+    // screen after this one, so guard against it on every fresh mount.
+    if (scrollLocked) {
+      BB.ui.scrollLock.unlock();
+      scrollLocked = false;
+    }
     container = containerEl;
     props = p || {};
     category = null;
