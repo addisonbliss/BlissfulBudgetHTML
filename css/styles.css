@@ -201,6 +201,29 @@ svg {
   text-align: center;
 }
 
+/* "Logging Expense to Spreadsheet..." pulse in the footer's cream band --
+   holds fully visible for 2s, fades out over 0.5s, back in over 0.5s,
+   repeating that 3s cycle for as long as it's shown (mirrors the native
+   app's Animatable sequence in BlissfulBudgetNavHost.kt). */
+.footer-logging-text {
+  font-family: var(--font-family);
+  color: var(--app-black);
+  text-align: center;
+  animation: footer-logging-pulse 3s ease-in-out infinite;
+}
+@keyframes footer-logging-pulse {
+  0%,
+  66.67% {
+    opacity: 1;
+  }
+  83.33% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 /* Buttons ----------------------------------------------------------------
    Mirrors BlissfulButton -- one shared class, one modifier class per
    BlissfulButtonVariant. Default size 121x32; callers override width/height
@@ -281,30 +304,32 @@ svg {
   color: var(--placeholder-blue);
 }
 
-/* Choose Spreadsheet (Frame 1/2) content layout ------------------------
-   A flex column, not an absolutely-positioned "bottom: 295px" group --
-   that approach measured up from the bottom of #screen-container, whose
-   real height depends on the actual browser viewport (address bar, safe
-   areas, etc. eat space the native app's fixed-size screen never had to
-   account for), so on a short-enough viewport the reserved 295px pushed
-   the field/button group up into the welcome text above it. The spacer
-   below absorbs whatever room is left between the two, and simply shrinks
-   -- instead of overlapping -- if the screen is too short to fit both with
-   room to spare. */
-.cs-content {
+/* Shared "top content + flexible spacer + bottom-anchored group" layout,
+   used by every screen whose primary field/button group is meant to sit a
+   fixed distance above the footer (matches the native app's shared
+   FieldGroupBottomPadding dimens). A flex column, not an absolutely-
+   positioned "bottom: Npx" group -- that approach measured up from the
+   bottom of #screen-container, whose real height depends on the actual
+   browser viewport (address bar, safe areas, etc. eat space the native
+   app's fixed-size screen never had to account for), so on a short-enough
+   viewport a reserved bottom offset pushed the field/button group up into
+   whatever's above it. The spacer below absorbs whatever room is left
+   between the two, and simply shrinks -- instead of overlapping -- if the
+   screen is too short to fit both with room to spare. */
+.frame-content {
   height: 100%;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
 }
-.cs-welcome {
+.frame-top {
   flex: 0 0 auto;
 }
-.cs-spacer {
+.frame-spacer {
   flex: 1 1 auto;
   min-height: 0;
 }
-.cs-bottom-group {
+.frame-bottom-group {
   flex: 0 0 auto;
   padding: 0 34px 295px;
 }
@@ -570,6 +595,381 @@ svg {
 }
 .bb-dialog-footer__buttons .bb-button {
   width: 110px;
+}
+
+/* LockedInfoRow (Frames 3-6+ read-only "SPREADSHEET FILE: ..." reference row) */
+.locked-info-row {
+  flex: 0 0 auto;
+  background: var(--cream-yellow);
+  padding: 6px 16px 6px 34px;
+}
+.locked-info-row__label {
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-style: italic;
+  font-size: var(--menu-label-size);
+  color: var(--app-black);
+  display: block;
+}
+.locked-info-row__value {
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: var(--field-value-size);
+  color: var(--app-black);
+  display: block;
+}
+
+/* "EXPENSE INFORMATION" section title (Frame 6+) */
+.section-title {
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-style: italic;
+  font-size: var(--section-title-size);
+  color: var(--app-black);
+  text-align: center;
+}
+
+/* Loading/error placeholder shown in a field's own 32px-tall slot while its
+   options are still loading or failed to load -- occupies the same height
+   as the real field so nothing shifts once it's ready. */
+.field-loading,
+.field-error {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  font-family: var(--font-family);
+  font-size: var(--field-value-size);
+  color: var(--button-disabled-border);
+}
+.field-error-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Generic labeled dropdown field (Category/Sub-Category/Who Dunnit?,
+   Month) -- same box look as .bb-field-box, plus a chevron and a popup
+   list of options. Disabled state (e.g. Sub-Category before a Category is
+   picked) reuses the disabled button palette. */
+.dropdown-field-box {
+  justify-content: space-between;
+  gap: 8px;
+}
+.dropdown-field-box.is-disabled {
+  background: var(--button-disabled-bg);
+  border-color: var(--button-disabled-border);
+  box-shadow: none;
+  cursor: default;
+}
+.dropdown-field-box.is-disabled .bb-field-value,
+.dropdown-field-box.is-disabled .bb-field-placeholder {
+  color: var(--button-disabled-border);
+}
+.dropdown-field-wrap {
+  position: relative;
+}
+.dropdown-popup {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 4px);
+  z-index: 60;
+  min-width: 100%;
+  background: var(--app-white);
+  border: 1px solid var(--app-black);
+  border-radius: 8px;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+.dropdown-popup__list {
+  max-height: 160px; /* 5 rows * 32px */
+  overflow-y: auto;
+}
+.dropdown-option-row {
+  display: block;
+  width: 100%;
+  height: 32px;
+  padding: 0 12px;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--button-disabled-border);
+  text-align: left;
+  font-family: var(--font-family);
+  font-size: var(--field-value-size);
+  color: var(--link-blue);
+  cursor: pointer;
+}
+.dropdown-option-row:first-child {
+  border-top: none;
+}
+
+/* Generic labeled text field (Expense Details) -- same box, a plain
+   editable input instead of a dropdown trigger. */
+.text-field-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: var(--field-value-size);
+  color: var(--link-blue);
+}
+.text-field-input::placeholder {
+  font-style: italic;
+  color: var(--placeholder-blue);
+  opacity: 1;
+}
+
+/* Amount field (Frame 6) -- fixed 157px wide, "$" prefix once filled,
+   right-aligned digits, and an overlay ("Calculating...", "ERROR") shown
+   instead of the real value while the calculator drop-up is open. */
+.amount-field-row {
+  justify-content: flex-end;
+  gap: 2px;
+}
+.amount-field-prefix {
+  font-family: var(--font-family);
+  font-size: var(--field-value-size);
+  color: var(--link-blue);
+}
+.amount-field-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  text-align: right;
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: var(--field-value-size);
+  color: var(--link-blue);
+}
+.amount-field-input::placeholder {
+  font-style: italic;
+  color: var(--placeholder-blue);
+  opacity: 1;
+}
+.amount-field-overlay {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-family);
+  font-style: italic;
+  font-size: var(--field-placeholder-size);
+  color: var(--chrome-dark-gray);
+}
+.amount-field-overlay.is-error {
+  color: var(--calculator-cancel-red);
+}
+.amount-calculator-icon {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  cursor: pointer;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
+}
+
+/* Calculator drop-up (Frame 6's Amount field) */
+.calculator-popup {
+  position: absolute;
+  z-index: 70;
+  width: 100%;
+  height: 115px;
+  background: var(--app-white);
+  border: 1px solid var(--app-black);
+  border-radius: 8px;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.25);
+  padding: 10px 9px 9px;
+  display: flex;
+  flex-direction: column;
+}
+.calculator-popup__formula-row {
+  display: flex;
+  align-items: center;
+  height: 30px;
+}
+.calculator-popup__formula-box {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  border: 1px solid var(--app-black);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+}
+.calculator-popup__formula-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-family);
+  font-size: var(--field-value-size);
+  color: var(--link-blue);
+}
+.calculator-popup__formula-input::placeholder {
+  font-style: italic;
+  color: var(--placeholder-blue);
+  opacity: 1;
+}
+.calculator-popup__equals {
+  width: 45px;
+  height: 30px;
+  flex: 0 0 auto;
+  margin-left: 6px;
+  background: var(--button-next-bg);
+  border: 1px solid var(--app-black);
+  border-radius: 4px;
+  box-shadow: 0 2px 1px rgba(0, 0, 0, 0.25);
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-style: italic;
+  font-size: var(--button-label-size);
+  color: var(--app-black);
+  cursor: pointer;
+}
+.calculator-popup__second-row {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  margin-top: 36px;
+}
+.calculator-popup__second-row.is-editing {
+  gap: 16px;
+}
+.calculator-popup__second-row.is-result {
+  justify-content: space-between;
+}
+.calculator-popup__caption {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-family);
+  font-style: italic;
+  font-size: var(--field-placeholder-size);
+  color: var(--chrome-dark-gray);
+}
+.calculator-action-button {
+  width: 86px;
+  height: 30px;
+  flex: 0 0 auto;
+  background: var(--button-secondary-bg);
+  border: 1px solid var(--app-black);
+  border-radius: 4px;
+  box-shadow: 0 2px 1px rgba(0, 0, 0, 0.25);
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-style: italic;
+  font-size: var(--menu-label-size);
+  text-align: center;
+  cursor: pointer;
+}
+.calculator-action-button.is-disabled {
+  background: var(--calculator-disabled-bg);
+  border-color: var(--chrome-dark-gray);
+  box-shadow: none;
+  cursor: default;
+  color: var(--chrome-dark-gray) !important;
+}
+
+/* Scrim (Category/Sub-Category/Who Dunnit?/calculator open) -- darkens the
+   field-rows/button area behind the open control while keeping the
+   "EXPENSE INFORMATION" title and the open field's own label at full
+   brightness, by re-rendering just those two text elements in a layer
+   above the scrim at their real measured positions (see expenseInformation.js). */
+.ei-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 40;
+}
+.ei-scrim-label {
+  position: absolute;
+  left: 34px;
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-style: italic;
+  font-size: var(--menu-label-size);
+  color: var(--app-black);
+  z-index: 41;
+}
+.ei-scrim-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-style: italic;
+  font-size: var(--section-title-size);
+  color: var(--app-black);
+  text-align: center;
+  z-index: 41;
+}
+
+/* Expense Logged (Frame 8) */
+.el-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 34px;
+  overflow-y: auto;
+}
+.el-smiley {
+  margin-top: 45px;
+  width: 122px;
+  height: 122px;
+  animation: el-smiley-rock 2s ease-in-out infinite alternate;
+}
+@keyframes el-smiley-rock {
+  from {
+    transform: rotate(-15deg);
+  }
+  to {
+    transform: rotate(15deg);
+  }
+}
+.el-headline {
+  margin-top: 1px;
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-style: italic;
+  font-size: var(--section-title-size);
+  color: var(--app-black);
+  text-align: center;
+  white-space: pre-line;
+}
+.el-excel-link {
+  margin-top: 21px;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-family);
+  font-style: italic;
+  font-size: var(--underlined-link-size);
+  color: var(--link-blue);
+  text-decoration: underline;
+  text-align: center;
+  cursor: pointer;
+}
+.el-spacer {
+  flex: 1 1 auto;
+  min-height: 12px;
+}
+.el-logo {
+  width: 79px;
+  height: 79px;
+}
+.el-secondary-row {
+  margin-top: 25px;
+  display: flex;
+  gap: 72.4px;
+}
+.el-new-expense {
+  margin-top: 23px;
+  margin-bottom: 40px;
+  width: 314.4px;
+  height: 40px;
 }
 
 /* Retry / error link buttons (plain text buttons, no box) */

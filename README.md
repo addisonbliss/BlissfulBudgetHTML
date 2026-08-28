@@ -71,20 +71,42 @@ automatically within a minute or two.
 
 ## What's implemented so far
 
+The full flow, matching the native app's latest implementation:
+
 - App shell (header, "EXPENSE LOG" title + logo, progress icon row, footer)
-  — persistent chrome matching `BlissfulBudgetNavHost.kt`.
+  — persistent chrome matching `BlissfulBudgetNavHost.kt`, including the
+  "Logging Expense to Spreadsheet..." footer pulse while a LOG write is in
+  flight.
 - Sign-in via MSAL.js (redirect flow — more reliable than popups on mobile
   Safari, especially once "Added to Home Screen").
 - Frame 1/2 (Choose Spreadsheet): the OneDrive picker, including the Most
-  Recent File shortcut and recursive filename search, matching the native
-  app's latest design.
+  Recent File shortcut and recursive filename search.
+- Frame 3/4/5 (Select Month): sheet names read via Graph, filtered/ordered
+  to calendar months.
+- Frame 6+ (Expense Information): Category/Sub-Category (read from the
+  month sheet's own cells, Sub-Category depending on which Category was
+  picked) and Who Dunnit? dropdowns, the Amount field with its full
+  arithmetic-calculator drop-up, Expense Details, and LOG writing the five
+  values into the first open row of the sheet's expense log range. The
+  scrim that darkens the field/button area while a dropdown or the
+  calculator is open (while keeping the title and the open field's own
+  label undimmed) is a from-scratch port of the native app's
+  measure-and-redraw technique, using `getBoundingClientRect()` instead of
+  Compose's `LayoutCoordinates`.
+- Frame 8 (Expense Logged): the rocking smiley, "Open Spreadsheet in
+  Excel" (opens the file's `webUrl` directly — there's no web equivalent
+  of pinning an intent to a specific app package), and Start Over / Close
+  / New Expense.
+
+One intentional simplification vs. the native app: the dropdown option
+lists (Category, Sub-Category, Who Dunnit?, Month) use the browser's own
+scrollbar past 5 visible rows, rather than reproducing the native app's
+custom 8px scrollbar-thumb component.
 
 ## Still to come
 
-Select Month, Expense Information (including the arithmetic calculator
-drop-up), and the Expense Logged confirmation screen — these will be added
-in follow-up passes, the same way the native app was built up over many
-rounds.
+Nothing functionally — this covers the full Frame 1→8 flow. Future passes
+will be visual polish/bugfixes reported from actually using it on a phone.
 
 ## Project layout
 
@@ -97,6 +119,7 @@ js/store.js            localStorage wrappers (mirrors OneDriveLocationStore/Most
 js/auth.js             MSAL.js wrapper (mirrors GraphAuthManager.kt)
 js/graph.js            Microsoft Graph REST calls (mirrors GraphApiClient.kt)
 js/calculator.js       Arithmetic expression evaluator (mirrors ArithmeticEvaluator.kt)
-js/screens/*.js        One file per frame/screen
-js/app.js              Shell chrome + router that shows the active screen
+js/ui/dropdown.js       Shared markup/wiring for the labeled dropdown field (Category, Sub-Category, Who Dunnit?, Month)
+js/screens/*.js        One file per frame/screen (chooseSpreadsheet, selectMonth, expenseInformation, expenseLogged)
+js/app.js              Nav host: shell chrome + the state machine that swaps the active screen
 ```
