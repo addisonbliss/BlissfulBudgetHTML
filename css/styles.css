@@ -2,8 +2,20 @@
 * {
   box-sizing: border-box;
 }
+/* Every height below is declared twice on purpose: 100vh first as a
+   fallback, then 100lvh ("large viewport height" -- the viewport's size
+   ignoring any on-screen keyboard) overriding it in browsers that
+   understand that unit. A browser that doesn't recognize `lvh` simply
+   discards that second, invalid declaration and keeps the `vh` one,
+   which is exactly how CSS is meant to degrade here. Without this, the
+   on-screen keyboard opening shrinks the visual viewport, plain vh/%
+   shrinks right along with it in most current mobile browsers, and this
+   whole fixed-height layout -- footer included -- visibly resizes/rises
+   to fit above the keyboard instead of staying full-size and simply
+   being covered by it. */
 html {
-  height: 100%;
+  height: 100vh;
+  height: 100lvh;
   overflow: hidden;
 }
 /* The document itself is permanently non-scrollable and pinned to the
@@ -18,7 +30,8 @@ html {
    fix, since iOS Safari can still rubber-band/scroll a plain
    overflow:hidden body via touch gestures. */
 body {
-  height: 100%;
+  height: 100vh;
+  height: 100lvh;
   margin: 0;
   padding: 0;
   overflow: hidden;
