@@ -311,7 +311,7 @@ BB.screens.expenseInformation = (() => {
     const anyOverlay = categoryExpanded || subCategoryExpanded || whoDunnitExpanded || calculatorOpen;
 
     container.innerHTML = `
-      <div class="frame-content" style="overflow-y:visible;">
+      <div class="frame-content">
         <div class="frame-top">
           <div style="height:16px;"></div>
           <div class="locked-info-row">
@@ -323,28 +323,28 @@ BB.screens.expenseInformation = (() => {
             <span class="locked-info-row__value">${escapeHtml(props.month)}</span>
           </div>
         </div>
-        <div id="ei-scrim-root" style="position:relative; flex:1 1 auto; min-height:0; display:flex; flex-direction:column;">
+        <div id="ei-scrim-root" style="position:relative; flex:0 0 auto;">
           <div style="height:11px;"></div>
           <div class="section-title" id="ei-title">EXPENSE INFORMATION</div>
           <div style="height:10px;"></div>
-          <div style="flex:1 1 auto; min-height:0; padding:0 34px 60px; display:flex; flex-direction:column; gap:16px; overflow-y:auto;">
+          <div style="padding:0 34px; display:flex; flex-direction:column; gap:16px;">
             ${categoryHtml}
             ${subCategoryHtml}
             ${amountHtml}
             ${whoDunnitHtml}
             ${detailsHtml}
           </div>
-          <div style="position:absolute; left:0; right:0; bottom:10px;">
-            <div style="display:flex; align-items:center; padding:0 33px 0 34px;">
-              <div style="display:flex; gap:12px;">
-                <button class="bb-button bb-button--secondary" id="ei-back-button" type="button" style="width:95px;">BACK</button>
-                <button class="bb-button bb-button--secondary" id="ei-clear-button" type="button" style="width:95px;">CLEAR</button>
-              </div>
-              <div style="flex:1;"></div>
-              ${logButtonHtml}
+          <div style="height:20px;"></div>
+          <div style="padding:0 33px 0 34px; display:flex; align-items:center;">
+            <div style="display:flex; gap:12px;">
+              <button class="bb-button bb-button--secondary" id="ei-back-button" type="button" style="width:95px;">BACK</button>
+              <button class="bb-button bb-button--secondary" id="ei-clear-button" type="button" style="width:95px;">CLEAR</button>
             </div>
-            ${logErrorHtml}
+            <div style="flex:1;"></div>
+            ${logButtonHtml}
           </div>
+          ${logErrorHtml}
+          <div style="height:40px;"></div>
           ${anyOverlay ? `<div class="ei-scrim" id="ei-scrim"></div>` : ""}
           ${categoryExpanded ? `<span class="ei-scrim-label" id="ei-scrim-category-label">CATEGORY</span>` : ""}
           ${subCategoryExpanded ? `<span class="ei-scrim-label" id="ei-scrim-subcategory-label">SUB-CATEGORY</span>` : ""}
@@ -558,8 +558,13 @@ BB.screens.expenseInformation = (() => {
       if (acceptButton) acceptButton.addEventListener("click", closeCalculator);
     }
 
+    // Always cleared first: a previous render's listener may still be
+    // pending (e.g. a dropdown was closed by picking an option rather than
+    // by an outside click), and leaving it registered would let it fire
+    // against stale/detached elements on some later, unrelated click.
+    document.removeEventListener("click", handleOutsideClick);
     if (categoryExpanded || subCategoryExpanded || whoDunnitExpanded) {
-      document.addEventListener("click", handleOutsideClick, { once: true });
+      document.addEventListener("click", handleOutsideClick);
     }
   }
 

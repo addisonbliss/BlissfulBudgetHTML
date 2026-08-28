@@ -33,12 +33,14 @@ BB.screens.chooseSpreadsheet = (() => {
     const isFilled = !!selectedFile;
     container.innerHTML = `
       <div class="frame-content">
-        <div class="frame-top">
-          <div style="font-family:var(--font-family); font-weight:700; font-style:italic; font-size:var(--header-title-size); color:var(--app-black); text-align:center;">WELCOME!</div>
-          <div style="height:12px;"></div>
-          <div style="font-family:var(--font-family); font-weight:700; font-style:italic; font-size:var(--section-title-size); color:var(--app-black); text-align:center;">TO GET STARTED<br/>CLICK THE FOLDER BELOW</div>
+        <div class="frame-top-region">
+          <div class="frame-top">
+            <div style="font-family:var(--font-family); font-weight:700; font-style:italic; font-size:var(--header-title-size); color:var(--app-black); text-align:center;">WELCOME!</div>
+            <div style="height:12px;"></div>
+            <div style="font-family:var(--font-family); font-weight:700; font-style:italic; font-size:var(--section-title-size); color:var(--app-black); text-align:center;">TO GET STARTED<br/>CLICK THE FOLDER BELOW</div>
+          </div>
+          <div class="frame-top-spacer"></div>
         </div>
-        <div class="frame-spacer"></div>
         <div class="frame-bottom-group">
           <label class="bb-field-label">CHOOSE SPREADSHEET FILE:</label>
           <div class="file-field-row">

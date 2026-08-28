@@ -304,34 +304,46 @@ svg {
   color: var(--placeholder-blue);
 }
 
-/* Shared "top content + flexible spacer + bottom-anchored group" layout,
-   used by every screen whose primary field/button group is meant to sit a
-   fixed distance above the footer (matches the native app's shared
-   FieldGroupBottomPadding dimens). A flex column, not an absolutely-
-   positioned "bottom: Npx" group -- that approach measured up from the
-   bottom of #screen-container, whose real height depends on the actual
-   browser viewport (address bar, safe areas, etc. eat space the native
-   app's fixed-size screen never had to account for), so on a short-enough
-   viewport a reserved bottom offset pushed the field/button group up into
-   whatever's above it. The spacer below absorbs whatever room is left
-   between the two, and simply shrinks -- instead of overlapping -- if the
-   screen is too short to fit both with room to spare. */
+/* Shared "fixed-height top region + primary field/button group" layout.
+   The gap between the progress icons above and each screen's primary
+   header (CHOOSE SPREADSHEET FILE:/CHOOSE MONTH:) is a hard constant
+   (.frame-top-region's flex-basis) -- the same on every screen and every
+   viewport height, matching the Figma design -- rather than a "bottom:
+   Npx"-anchored group (that approach measured up from the bottom of
+   #screen-container, whose real height depends on the actual browser
+   viewport, so a short-enough viewport either shrank that gap
+   unpredictably or pushed the field/button group up into whatever was
+   above it). Each screen's own frame-top content (welcome text, or the
+   locked info row) sits at the top of that fixed region; frame-top-spacer
+   absorbs whatever room is left within that SAME fixed budget, so the
+   region's total height never changes even though frame-top's own height
+   differs screen to screen. Anything below the fixed region -- the header,
+   its field, and the button row -- just flows normally afterward, so on a
+   short viewport the whole assembly (buttons included) scrolls as one
+   unit via frame-content's own overflow-y, rather than any one piece
+   overlapping another. */
 .frame-content {
   height: 100%;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
 }
+.frame-top-region {
+  flex: 0 0 348px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
 .frame-top {
   flex: 0 0 auto;
 }
-.frame-spacer {
+.frame-top-spacer {
   flex: 1 1 auto;
   min-height: 0;
 }
 .frame-bottom-group {
   flex: 0 0 auto;
-  padding: 0 34px 295px;
+  padding: 0 34px 40px;
 }
 
 /* SpreadsheetFileField (Frame 1/2) */

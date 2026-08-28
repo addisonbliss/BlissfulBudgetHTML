@@ -80,18 +80,20 @@ BB.screens.selectMonth = (() => {
 
     container.innerHTML = `
       <div class="frame-content">
-        <div class="frame-top">
-          <div style="height:16px;"></div>
-          <div class="locked-info-row">
-            <label class="locked-info-row__label">SPREADSHEET FILE:</label>
-            <span class="locked-info-row__value">${escapeHtml(props.spreadsheetFileName)}</span>
+        <div class="frame-top-region">
+          <div class="frame-top">
+            <div style="height:16px;"></div>
+            <div class="locked-info-row">
+              <label class="locked-info-row__label">SPREADSHEET FILE:</label>
+              <span class="locked-info-row__value">${escapeHtml(props.spreadsheetFileName)}</span>
+            </div>
           </div>
+          <div class="frame-top-spacer"></div>
         </div>
-        <div class="frame-spacer"></div>
         <div class="frame-bottom-group">
-          <label class="bb-field-label" style="padding-left:34px; display:block;">CHOOSE MONTH:</label>
+          <label class="bb-field-label" style="display:block;">CHOOSE MONTH:</label>
           <div style="height:4px;"></div>
-          <div style="padding-left:34px;">${fieldHtml}</div>
+          <div>${fieldHtml}</div>
           <div style="height:43px;"></div>
           <div style="display:flex; justify-content:flex-end; gap:20px; padding-right:33px;">
             <button class="bb-button ${disabledLook ? "bb-button--disabled" : "bb-button--secondary"}" id="sm-back-button" type="button" ${disabledLook ? "disabled" : ""}>BACK</button>
@@ -136,9 +138,14 @@ BB.screens.selectMonth = (() => {
     }
 
     // Closes the popup on any click outside it -- mirrors Compose Popup's
-    // own onDismissRequest behavior for a tap outside the dropdown.
+    // own onDismissRequest behavior for a tap outside the dropdown. Always
+    // cleared first: a previous render's listener may still be pending
+    // (e.g. the dropdown was closed by picking an option rather than by an
+    // outside click), and leaving it registered would let it fire against
+    // a stale/detached `container` on some later, unrelated click.
+    document.removeEventListener("click", handleOutsideClick);
     if (dropdownExpanded) {
-      document.addEventListener("click", handleOutsideClick, { once: true });
+      document.addEventListener("click", handleOutsideClick);
     }
   }
 
