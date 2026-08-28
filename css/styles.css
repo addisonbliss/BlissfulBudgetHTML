@@ -2,20 +2,25 @@
 * {
   box-sizing: border-box;
 }
-/* Every height below is declared twice on purpose: 100vh first as a
-   fallback, then 100lvh ("large viewport height" -- the viewport's size
-   ignoring any on-screen keyboard) overriding it in browsers that
-   understand that unit. A browser that doesn't recognize `lvh` simply
-   discards that second, invalid declaration and keeps the `vh` one,
-   which is exactly how CSS is meant to degrade here. Without this, the
-   on-screen keyboard opening shrinks the visual viewport, plain vh/%
-   shrinks right along with it in most current mobile browsers, and this
-   whole fixed-height layout -- footer included -- visibly resizes/rises
-   to fit above the keyboard instead of staying full-size and simply
-   being covered by it. */
+/* Every height below is declared three times on purpose, weakest fallback
+   first: 100vh, then 100lvh ("large viewport height", ignoring any
+   on-screen keyboard -- discarded by browsers that don't recognize the
+   unit, keeping the vh value), then var(--app-height, 100vh) last, which
+   wins once the inline script in index.html's <head> sets it. That
+   script captures the viewport size once in plain JS and deliberately
+   ignores any resize that isn't also a width change -- the keyboard
+   opening/closing only ever changes height -- pinning this layout's
+   height to a real, unchanging pixel value instead of a CSS viewport
+   unit. Both vh and lvh turned out to still shrink for the keyboard on
+   at least one major mobile browser, which dragged this whole fixed-
+   height layout (footer included) up to fit above the keyboard instead
+   of staying full-size and simply being covered by it -- the JS-pinned
+   value is the actually-authoritative fix; the vh/lvh layers below it
+   only matter for the brief instant before that script runs. */
 html {
   height: 100vh;
   height: 100lvh;
+  height: var(--app-height, 100vh);
   overflow: hidden;
 }
 /* The document itself is permanently non-scrollable and pinned to the
@@ -32,6 +37,7 @@ html {
 body {
   height: 100vh;
   height: 100lvh;
+  height: var(--app-height, 100vh);
   margin: 0;
   padding: 0;
   overflow: hidden;

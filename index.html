@@ -25,6 +25,44 @@
   />
   <link rel="stylesheet" href="css/tokens.css" />
   <link rel="stylesheet" href="css/styles.css" />
+  <script>
+    // Pins the app's height to a plain JS-captured pixel value (via the
+    // --app-height custom property styles.css reads) instead of a CSS
+    // viewport unit -- CSS vh/%/lvh all turned out to still shrink for
+    // the on-screen keyboard on at least one major mobile browser, which
+    // dragged this fixed-height layout (footer included) up to fit above
+    // the keyboard instead of staying full-size and being covered by it.
+    // A resize is only treated as real (device rotation, browser window
+    // resize) and allowed to update the captured height when the WIDTH
+    // also changed -- the keyboard opening/closing only ever changes
+    // height, so those are deliberately ignored, leaving the layout
+    // exactly where it was before the keyboard appeared.
+    (function () {
+      function currentSize() {
+        var vv = window.visualViewport;
+        return { width: (vv && vv.width) || window.innerWidth, height: (vv && vv.height) || window.innerHeight };
+      }
+      var last = currentSize();
+      function setAppHeight() {
+        document.documentElement.style.setProperty("--app-height", last.height + "px");
+      }
+      setAppHeight();
+      function handleResize() {
+        var size = currentSize();
+        if (size.width !== last.width) {
+          last = size;
+          setAppHeight();
+        }
+      }
+      window.addEventListener("resize", handleResize);
+      window.addEventListener("orientationchange", function () {
+        setTimeout(handleResize, 100);
+      });
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", handleResize);
+      }
+    })();
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.14.0/lib/msal-browser.min.js"></script>
 </head>
 <body>
