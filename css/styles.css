@@ -277,7 +277,6 @@ svg {
   font-size: var(--menu-label-size);
   color: var(--app-black);
   display: block;
-  margin-bottom: 4px;
 }
 .bb-field-box {
   height: 32px;
@@ -780,7 +779,7 @@ svg {
    offset, for the same staleness reasons as .calculator-popup above. */
 .ei-scrim-amount-box {
   position: absolute;
-  top: 22px;
+  top: 23px;
   left: 0;
   width: 196px;
   z-index: 41;

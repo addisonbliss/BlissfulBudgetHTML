@@ -43,6 +43,7 @@ BB.screens.chooseSpreadsheet = (() => {
         </div>
         <div class="frame-bottom-group">
           <label class="bb-field-label">CHOOSE SPREADSHEET FILE:</label>
+          <div style="height:4px;"></div>
           <div class="file-field-row">
             <div class="file-field-box">
               <div class="bb-field-box" id="cs-file-field-box" role="button" tabindex="0" aria-label="Choose spreadsheet file">
