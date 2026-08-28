@@ -1,0 +1,53 @@
+/*
+  Design tokens, ported 1:1 from the native app's
+  ui/theme/Color.kt, Type.kt, and Dimens.kt. If a new color/style is needed,
+  check those files first rather than inventing one here, same rule the
+  native app's own Color.kt documents for itself.
+*/
+:root {
+  /* Surfaces */
+  --cream-yellow: #fff8cc;
+  --app-white: #ffffff;
+  --app-black: #000000;
+
+  /* Text / link colors */
+  --link-blue: #0000ff;
+  --placeholder-blue: #adc8ff;
+
+  /* Buttons */
+  --button-disabled-bg: #e8e8e8;
+  --button-disabled-border: #b5b5b5;
+  --button-secondary-bg: #e1ebff;
+  --button-next-bg: #adc8ff;
+  --button-green-bg: #149b4c;
+
+  /* Icons */
+  --check-green: #149b4c;
+  --scrollbar-thumb: #b5b5b5;
+
+  /* Chrome */
+  --chrome-dark-gray: #4a4a4a;
+
+  /* Calculator drop-up */
+  --calculator-accept-green: #149b4c;
+  --calculator-cancel-red: #d31919;
+  --calculator-disabled-bg: #d9d9d9;
+
+  /* Type -- "sp" in the native app maps 1:1 to px here, same convention
+     used throughout this whole project (Figma "pixels" = dp = px). */
+  --font-family: "Open Sans", sans-serif;
+
+  --header-title-size: 24px; /* HeaderTitleStyle: Bold Italic */
+  --expense-log-title-size: 30px; /* ExpenseLogTitleStyle: Bold Italic */
+  --menu-label-size: 14px; /* MenuLabelStyle: Bold Italic */
+  --section-title-size: 18px; /* SectionTitleStyle: Bold Italic */
+  --field-value-size: 14px; /* FieldValueStyle: Normal */
+  --field-placeholder-size: 14px; /* FieldPlaceholderStyle: Normal Italic */
+  --button-label-size: 16px; /* ButtonLabelStyle: Bold Italic */
+  --progress-icon-label-size: 10px; /* ProgressIconLabelStyle: Normal */
+  --underlined-link-size: 18px; /* UnderlinedLinkStyle: Normal Italic Underline */
+
+  /* Dimens */
+  --footer-height: 39px; /* 2px divider + 37px cream band */
+  --check-circle-size: 22.5px;
+}

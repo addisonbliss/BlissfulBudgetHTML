@@ -1,0 +1,557 @@
+/* Reset + base ------------------------------------------------------- */
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #d0d0d0; /* neutral desktop backdrop behind the phone frame */
+  font-family: var(--font-family);
+  -webkit-tap-highlight-color: transparent;
+}
+button {
+  font-family: inherit;
+}
+img,
+svg {
+  display: block;
+}
+
+/* Phone frame ---------------------------------------------------------
+   The whole design is built for a 402dp-wide reference frame. On an
+   actual phone the frame just fills the viewport; on a wider screen it's
+   centered with a visible edge, the same convention most mobile-first web
+   apps use for desktop preview. */
+.phone-frame {
+  max-width: 402px;
+  min-height: 100vh;
+  margin: 0 auto;
+  background: var(--app-white);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-x: hidden;
+}
+@media (min-width: 403px) {
+  .phone-frame {
+    min-height: 100vh;
+    box-shadow: 0 0 24px rgba(0, 0, 0, 0.25);
+  }
+}
+
+/* Header ---------------------------------------------------------------
+   Mirrors BlissfulBudgetHeader (BlissfulBudgetComponents.kt). The native
+   app also draws a fake system status bar above this, since Android
+   renders edge-to-edge; a browser (especially a "installed" PWA) already
+   reserves real status-bar space on its own, so that's intentionally not
+   reproduced here. */
+.app-header {
+  position: relative;
+  height: 47px;
+  flex: 0 0 auto;
+  background: var(--cream-yellow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 2px solid var(--app-black);
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.15);
+}
+.app-header__title {
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-style: italic;
+  font-size: var(--header-title-size);
+  color: var(--app-black);
+  text-align: center;
+}
+.app-header__close {
+  position: absolute;
+  right: 6px;
+  top: 4px;
+  width: 30px;
+  height: 30px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* "EXPENSE LOG" title row ------------------------------------------- */
+.app-title-row {
+  flex: 0 0 auto;
+  padding: 5px 34px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.app-title-row__text {
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-style: italic;
+  font-size: var(--expense-log-title-size);
+  color: var(--app-black);
+}
+.app-title-row__logo {
+  width: 43px;
+  height: 43px;
+}
+
+/* Progress icon row --------------------------------------------------
+   Exact spacing from ExpenseLogProgressIcons: 57/16/24/14/55/10/24/10/55dp
+   column widths/gaps, 69dp row height, icons top-aligned at 40dp tall
+   (scaled by their own aspect ratio), captions vertically centered below. */
+.progress-row {
+  flex: 0 0 auto;
+  margin-top: 11px;
+  height: 69px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.progress-col {
+  height: 69px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.progress-col--access-file {
+  width: 57px;
+}
+.progress-col--choose-month,
+.progress-col--log-expense {
+  width: 55px;
+}
+.progress-col__icon {
+  height: 40px;
+  flex: 0 0 auto;
+}
+.progress-col__icon svg {
+  height: 40px;
+  width: auto;
+}
+.progress-col__label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: var(--progress-icon-label-size);
+  color: var(--app-black);
+  text-align: center;
+  white-space: pre-line;
+}
+.progress-arrow {
+  margin-top: 16px;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+}
+.progress-gap-16 {
+  width: 16px;
+}
+.progress-gap-14 {
+  width: 14px;
+}
+.progress-gap-10 {
+  width: 10px;
+}
+
+/* Screen container -----------------------------------------------------
+   Fills all remaining space; each screen module renders into here.
+   position:relative so a screen's own dropdown/scrim/calculator overlays
+   (position:absolute) are positioned against this, not the whole page. */
+#screen-container {
+  flex: 1 1 auto;
+  position: relative;
+}
+.screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+.screen.is-active {
+  display: block;
+}
+
+/* Footer ---------------------------------------------------------------
+   Mirrors BlissfulBudgetFooter: 2px dark divider + 37px cream band. */
+.app-footer {
+  flex: 0 0 auto;
+  height: var(--footer-height);
+  display: flex;
+  flex-direction: column;
+}
+.app-footer__divider {
+  height: 2px;
+  background: var(--chrome-dark-gray);
+}
+.app-footer__band {
+  flex: 1;
+  background: var(--cream-yellow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.app-footer__band .bb-loading-text {
+  font-family: var(--font-family);
+  color: var(--app-black);
+  text-align: center;
+}
+
+/* Buttons ----------------------------------------------------------------
+   Mirrors BlissfulButton -- one shared class, one modifier class per
+   BlissfulButtonVariant. Default size 121x32; callers override width/height
+   inline the same way the Compose version takes width/height params. */
+.bb-button {
+  width: 121px;
+  height: 32px;
+  border-radius: 8px;
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-style: italic;
+  font-size: var(--button-label-size);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.bb-button--disabled {
+  background: var(--button-disabled-bg);
+  border: 1px solid var(--button-disabled-border);
+  color: var(--button-disabled-border);
+  box-shadow: none;
+  cursor: default;
+}
+.bb-button--secondary {
+  background: var(--button-secondary-bg);
+  border: 1px solid var(--app-black);
+  color: var(--app-black);
+  box-shadow: 0 2px 1px rgba(0, 0, 0, 0.25);
+}
+.bb-button--next {
+  background: var(--button-next-bg);
+  border: 1px solid var(--app-black);
+  color: var(--app-black);
+  box-shadow: 0 2px 1px rgba(0, 0, 0, 0.25);
+}
+.bb-button--green {
+  background: var(--button-green-bg);
+  border: 1px solid var(--app-black);
+  color: var(--app-white);
+  box-shadow: 0 2px 1px rgba(0, 0, 0, 0.25);
+}
+
+/* Standard field box (shared "field-box" look: white, black border, 8px
+   radius, 2px shadow) used by SpreadsheetFileField, dropdowns, etc. */
+.bb-field-label {
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-style: italic;
+  font-size: var(--menu-label-size);
+  color: var(--app-black);
+  display: block;
+  margin-bottom: 4px;
+}
+.bb-field-box {
+  height: 32px;
+  border-radius: 8px;
+  background: var(--app-white);
+  border: 1px solid var(--app-black);
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  padding: 0 9px;
+  cursor: pointer;
+}
+.bb-field-value {
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: var(--field-value-size);
+  color: var(--link-blue);
+}
+.bb-field-placeholder {
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-style: italic;
+  font-size: var(--field-placeholder-size);
+  color: var(--placeholder-blue);
+}
+
+/* SpreadsheetFileField (Frame 1/2) */
+.file-field-row {
+  display: flex;
+  align-items: center;
+}
+.file-field-box {
+  flex: 1;
+  min-width: 0;
+}
+.file-field-box .bb-field-box {
+  justify-content: space-between;
+  gap: 8px;
+}
+.file-field-box .bb-field-value,
+.file-field-box .bb-field-placeholder {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.file-field-checkmark-slot {
+  width: 6px;
+  flex: 0 0 auto;
+}
+.file-field-checkmark {
+  width: var(--check-circle-size);
+  height: var(--check-circle-size);
+  flex: 0 0 auto;
+  margin-left: 6px;
+}
+.file-field-checkmark svg,
+.file-field-checkmark img {
+  width: 100%;
+  height: 100%;
+}
+
+/* ----------------------------------------------------------------------
+   OneDrive picker dialog
+   ---------------------------------------------------------------------- */
+.bb-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.bb-dialog-backdrop.is-open {
+  display: flex;
+}
+.bb-dialog-card {
+  width: 335px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 64px);
+  margin-top: 55px;
+  background: var(--app-white);
+  border: 1px solid var(--app-black);
+  border-radius: 8px;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.25);
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.bb-dialog-title {
+  font-family: var(--font-family);
+  font-weight: 700;
+  font-style: italic;
+  font-size: var(--header-title-size);
+  color: var(--app-black);
+  text-align: center;
+}
+.bb-dialog-gap-8 {
+  height: 8px;
+  flex: 0 0 auto;
+}
+.bb-dialog-gap-4 {
+  height: 4px;
+  flex: 0 0 auto;
+}
+.most-recent-label {
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-style: italic;
+  font-size: var(--field-placeholder-size);
+  color: var(--chrome-dark-gray);
+}
+.most-recent-empty {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  padding: 4px 0 4px 28px;
+  font-family: var(--font-family);
+  font-size: var(--field-value-size);
+  color: var(--chrome-dark-gray);
+}
+.bb-divider {
+  height: 1px;
+  background: var(--button-disabled-border);
+  flex: 0 0 auto;
+}
+.search-bar {
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--app-black);
+  background: var(--app-white);
+  display: flex;
+  align-items: center;
+  padding: 0 9px;
+  flex: 0 0 auto;
+}
+.search-bar__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: var(--field-value-size);
+  color: var(--link-blue);
+}
+.search-bar__input::placeholder {
+  font-style: italic;
+  color: var(--placeholder-blue);
+  opacity: 1;
+}
+.search-bar__submit {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  margin-left: 6px;
+}
+.breadcrumb-row {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  min-height: 32px;
+  overflow-x: auto;
+}
+.breadcrumb-arrow-slot {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.breadcrumb-arrow-slot button {
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+}
+.breadcrumb-segment {
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: 16px;
+  color: var(--chrome-dark-gray);
+  text-decoration: underline;
+  white-space: nowrap;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.breadcrumb-segment.is-current {
+  cursor: default;
+  text-decoration: underline;
+}
+.breadcrumb-sep {
+  font-family: var(--font-family);
+  font-size: 16px;
+  color: var(--chrome-dark-gray);
+  margin: 0 6px;
+}
+.search-results-label {
+  font-family: var(--font-family);
+  font-size: 16px;
+  color: var(--chrome-dark-gray);
+}
+.entry-list-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  height: 256px; /* DropdownRowHeight(32) * MaxVisibleOneDriveRows(8) */
+  overflow: hidden;
+}
+.entry-list {
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.entry-row {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 4px 12px;
+  gap: 8px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-family);
+}
+.entry-row__icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+}
+.entry-row__label {
+  font-size: var(--field-value-size);
+  overflow-wrap: anywhere;
+}
+.entry-row__label--folder {
+  color: var(--app-black);
+}
+.entry-row__label--file {
+  color: var(--link-blue);
+}
+.entry-empty-message,
+.entry-status-message {
+  padding: 12px;
+  font-family: var(--font-family);
+  font-size: var(--field-value-size);
+  color: var(--app-black);
+}
+.entry-status-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.bb-dialog-footer {
+  flex: 0 0 auto;
+  padding-top: 12px;
+}
+.bb-dialog-footer__signed-in {
+  font-family: var(--font-family);
+  font-style: italic;
+  font-size: var(--field-value-size);
+  color: var(--chrome-dark-gray);
+  min-height: 17px;
+  display: block;
+  margin-bottom: 8px;
+}
+.bb-dialog-footer__buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.bb-dialog-footer__buttons .bb-button {
+  width: 110px;
+}
+
+/* Retry / error link buttons (plain text buttons, no box) */
+.link-button {
+  background: none;
+  border: none;
+  color: var(--link-blue);
+  font-family: var(--font-family);
+  font-size: var(--field-value-size);
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px 0;
+}

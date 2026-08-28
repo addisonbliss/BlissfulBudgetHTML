@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Blissful Budget" />
+  <title>Blissful Budget Expense Log</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://alcdn.msauth.net/browser/3.14.0/js/msal-browser.min.js"></script>
+</head>
+<body>
+  <div class="phone-frame" id="app">
+    <!--
+      Persistent chrome -- mirrors BlissfulBudgetNavHost.kt: rendered once,
+      never re-created as the active screen changes, so it never "flashes"
+      or re-animates on navigation.
+    -->
+    <header class="app-header">
+      <span class="app-header__title">BLISSFUL BUDGET</span>
+      <button class="app-header__close" id="header-close-button" aria-label="Close" type="button"></button>
+    </header>
+
+    <div class="app-title-row">
+      <span class="app-title-row__text">EXPENSE LOG</span>
+      <img class="app-title-row__logo" src="icons/logo_bb.png" alt="" />
+    </div>
+
+    <div class="progress-row" id="progress-row">
+      <div class="progress-col progress-col--access-file">
+        <div class="progress-col__icon" id="progress-icon-access-file"></div>
+        <div class="progress-col__label">ACCESS<br />FILE</div>
+      </div>
+      <div class="progress-gap-16"></div>
+      <div class="progress-arrow" id="progress-arrow-1"></div>
+      <div class="progress-gap-14"></div>
+      <div class="progress-col progress-col--choose-month">
+        <div class="progress-col__icon" id="progress-icon-choose-month"></div>
+        <div class="progress-col__label">CHOOSE MONTH</div>
+      </div>
+      <div class="progress-gap-10"></div>
+      <div class="progress-arrow" id="progress-arrow-2"></div>
+      <div class="progress-gap-10"></div>
+      <div class="progress-col progress-col--log-expense" style="margin-left: -3px;">
+        <div class="progress-col__icon" id="progress-icon-log-expense"></div>
+        <div class="progress-col__label">LOG EXPENSE</div>
+      </div>
+    </div>
+
+    <main id="screen-container">
+      <!-- Screens are injected here by js/app.js -->
+    </main>
+
+    <footer class="app-footer">
+      <div class="app-footer__divider"></div>
+      <div class="app-footer__band" id="footer-band"></div>
+    </footer>
+  </div>
+
+  <!-- OneDrive picker dialog -- shared shell, filled in by chooseSpreadsheet.js -->
+  <div class="bb-dialog-backdrop" id="onedrive-dialog-backdrop">
+    <div class="bb-dialog-card" id="onedrive-dialog-card"></div>
+  </div>
+
+  <script src="js/icons.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/graph.js"></script>
+  <script src="js/calculator.js"></script>
+  <script src="js/screens/chooseSpreadsheet.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
