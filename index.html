@@ -3,16 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <!--
-    interactive-widget=overlays-content: tells Chrome/Android that the
-    on-screen keyboard should sit on TOP of the page rather than shrinking
-    the viewport to make room for it -- without this, opening the keyboard
-    resizes the whole (height:100%-based) layout down to fit above it,
-    dragging the footer up into view instead of leaving it hidden behind
-    the keyboard where it belongs. Ignored (harmless) on browsers that
+    interactive-widget=resizes-visual: tells Chrome/Android to keep the
+    LAYOUT viewport (what this app's pinned height and fixed positioning
+    are based on) stable when the on-screen keyboard opens, so the footer
+    doesn't rise to fit above it -- while still letting
+    window.visualViewport shrink to the actually-visible area, which
+    js/ui/keyboardScroll.js needs to detect the keyboard at all and know
+    how much of a focused field it's covering. `overlays-content` (tried
+    first) turned out to suppress that visualViewport shrink too, which
+    broke keyboard-aware scrolling entirely -- this value is the one that
+    satisfies both needs at once. Ignored (harmless) on browsers that
     don't recognize it; see styles.css's 100lvh usage for the equivalent
-    fix on those.
+    stable-layout fix on those (mainly Safari, which already lets
+    visualViewport shrink for the keyboard on its own).
   -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=overlays-content" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-visual" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Blissful Budget" />

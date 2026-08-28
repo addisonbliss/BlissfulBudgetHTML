@@ -101,10 +101,26 @@ BB.ui.keyboardScroll = (() => {
     const el = e.target;
     if (!isTextEntry(el)) return;
     // The keyboard's own show animation (and so visualViewport's final,
-    // settled size) doesn't necessarily land the instant focus fires --
-    // checked again shortly after, not just once.
-    ensureVisible(el);
-    setTimeout(() => ensureVisible(el), 300);
+    // settled size) doesn't land the instant focus fires, and how long it
+    // actually takes varies by device/OS/keyboard -- a single fixed delay
+    // is a guess that's wrong on some of them. Polled instead: rechecked
+    // every 100ms for up to ~1.2s or until focus moves elsewhere,
+    // settling naturally once the keyboard (and visualViewport) actually
+    // finish animating, however long that takes on this device. Cheap
+    // and idempotent once the field is already visible, so the extra
+    // checks cost nothing once it's caught up. window.visualViewport's
+    // own resize listener below still covers a later keyboard-height
+    // change (e.g. an autofill/predictive-text bar appearing) after this
+    // window ends.
+    let attempts = 0;
+    const poll = setInterval(() => {
+      attempts++;
+      if (document.activeElement !== el || attempts > 12) {
+        clearInterval(poll);
+        return;
+      }
+      ensureVisible(el);
+    }, 100);
   }
 
   function handleFocusOut() {
