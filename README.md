@@ -21,9 +21,12 @@ directly by the browser as-is:
   quick iteration. Each `js/*.js` file attaches its exports to a single
   global `BB` namespace object instead of using `import`/`export`.
 - [MSAL.js](https://github.com/AzureAD/microsoft-authentication-library-for-js)
-  is loaded from Microsoft's own CDN via a `<script>` tag in `index.html`
-  (`window.msal` global), the same way Microsoft's own docs show it for a
-  plain script tag setup.
+  is loaded via a `<script>` tag in `index.html` (`window.msal` global) from
+  jsdelivr, pinned to a specific version. (Microsoft's own CDN,
+  `alcdn.msauth.net`, turned out to 404 on the pinned version this app
+  originally used — it appears to only keep a rolling window of recent
+  versions rather than every version indefinitely — so this uses jsdelivr's
+  npm mirror instead, which keeps every published version permanently.)
 - Fonts are the real Open Sans family via Google Fonts
   (`https://fonts.googleapis.com`), matching the native app's bundled
   `res/font/` files.
